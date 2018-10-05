@@ -1,7 +1,7 @@
 # Restore Apps from TWRP Backup
 
 This is a bash script that automates the process of manually restoring android apps from a TWRP backup.
-This script was taken from [information provided by semipol.]](https://www.semipol.de/2016/07/30/android-restoring-apps-from-twrp-backup.html)
+This script was taken from [information provided by semipol.](https://www.semipol.de/2016/07/30/android-restoring-apps-from-twrp-backup.html)
 
 ## Doesn't TWRP backups have a restore process?
 
