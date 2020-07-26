@@ -51,8 +51,12 @@ printf "=========================================================\n"
 for package in ${packages[*]}
 do
     printf "=========================================================\n"
+    printf "Killing %s\n" $package
+    adb shell am force-stop $package
+    printf "Clearing %s\n" $package
+    adb shell pm clear $package
     printf "Restoring %s\n" $package
-    adb push $localpackages$package $remotepackages$package
+    adb push $localpackages$package $remotepackages
     printf "Correcting package\n"
     userid=$(adb shell dumpsys package $package | grep userId | cut -d "=" -f2-)
     adb shell chown -R $userid:$userid $remotepackages$package
