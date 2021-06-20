@@ -17,25 +17,19 @@
 # https://itsfoss.com/fix-error-insufficient-permissions-device/
 
 # TWRP extract location for data/data/
-localpackages='data/data/'
+# Change if necessary!
+localpackages="data/data/"
+localapkpath="data/app" # do not append '/'
 # Android delivery destination
 remotepackages='/data/data/'
 
 # filename of packages in data/data/ to restore
 declare -a packages=(
-"io.getdelta.android" 
-"ca.mogo.mobile"
-"au.com.shiftyjelly.pocketcasts"
-"com.valvesoftware.android.steam.community"
-"com.ubercab"
-"de.stocard.stocard"
-"com.wealthsimple"
-"com.calm.android"
-"com.coinomi.wallet"
-"com.aspiro.tidal"
-"com.appgenix.bizcal"
-"com.americanexpress.android.acctsvcs.ca"
-"com.amazon.venezia"
+"change.these.names"
+"com.first.app"
+"com.second.app"
+"com.third.app"
+"com.more.apps"
 )
 
 printf "=========================================================\n"
@@ -55,8 +49,13 @@ do
     adb shell am force-stop $package
     printf "Clearing %s\n" $package
     adb shell pm clear $package
+    
+    printf "Reinstalling apk of %s\n" $package
+    apkpath=$localapkpath/$(ls -1 "$localapkpath" | grep -i $package)
+    adb install -r "$apkpath/base.apk"
+    
     printf "Restoring %s\n" $package
-    adb push $localpackages$package $remotepackages
+    adb push "$localpackages$package" $remotepackages
     printf "Correcting package\n"
     userid=$(adb shell dumpsys package $package | grep userId | cut -d "=" -f2-)
     adb shell chown -R $userid:$userid $remotepackages$package
