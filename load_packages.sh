@@ -51,7 +51,7 @@ do
     adb shell pm clear $package
     
     printf "Reinstalling apk of %s\n" $package
-    apkpath=$localapkpath/$(ls -1 "$localapkpath" | grep -i $package)
+    apkpath=$(find . -maxdepth 4 -type d -print | grep $package | head -n1)
     adb install -r "$apkpath/base.apk"
     
     printf "Restoring %s\n" $package
