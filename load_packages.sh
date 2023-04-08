@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # The following script will restore apps 
 # from a TWRP backup to an android phone.
@@ -23,14 +23,10 @@ localapkpath="data/app" # do not append '/'
 # Android delivery destination
 remotepackages='/data/data/'
 
-# filename of packages in data/data/ to restore
-declare -a packages=(
-"change.these.names"
-"com.first.app"
-"com.second.app"
-"com.third.app"
-"com.more.apps"
-)
+if [ -z $1 ]; then
+    printf "Usage: %s <pkg-list>\n" $0
+    exit 1
+fi
 
 printf "=========================================================\n"
 printf "Killing ADB server\n"
@@ -41,19 +37,34 @@ printf "Starting ADB as root\n"
 adb root
 printf "=========================================================\n"
 
+function restore_pkg()
+{
+    package=$1
+    if [ -z $package ]; then
+        return
+    fi
 
-for package in ${packages[*]}
-do
     printf "=========================================================\n"
-    printf "Killing %s\n" $package
-    adb shell am force-stop $package
-    printf "Clearing %s\n" $package
-    adb shell pm clear $package
-    
+
+    adb shell pm path $package
+    exists=$?
+
+    if [ $exists -eq 0 ]; then
+        printf "Killing %s\n" $package
+        adb shell am force-stop $package
+        printf "Clearing %s\n" $package
+        adb shell pm clear $package
+    fi
+
     printf "Reinstalling apk of %s\n" $package
-    apkpath=$(find . -maxdepth 4 -type d -print | grep $package | head -n1)
-    adb install -r "$apkpath/base.apk"
-    
+    apkpath=$(find -name base.apk -path "*/${package}-*")
+    adb install -r "$apkpath"
+
+    if [ $? -ne 0 ] && [ $exists -eq 0]; then
+        printf "Package %s is not installed. %s\n" $package
+        return
+    fi
+
     printf "Restoring %s\n" $package
     adb push "$localpackages$package" $remotepackages
     printf "Correcting package\n"
@@ -61,7 +72,10 @@ do
     adb shell chown -R $userid:$userid $remotepackages$package
     adb shell restorecon -Rv $remotepackages$package
     printf "Package restored on device\n"
-    sleep 1
-    
-done
+}
 
+for package in $(cat $1)
+do
+    restore_pkg $package
+    sleep 1
+done
